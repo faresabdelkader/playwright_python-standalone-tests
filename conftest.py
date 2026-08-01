@@ -30,5 +30,12 @@ def browser_type_launch_args(browser_type_launch_args):
         "headless": settings.HEADLESS,
         "slow_mo": settings.SLOW_MO,
         **browser_type_launch_args,
+        "args": ["--start-maximized"],
     }
 
+@pytest.fixture(scope="session")
+def browser_context_args(browser_context_args):
+    return {
+        **browser_context_args,
+        "no_viewport": True,  # PREVENTS Playwright from resetting size to 1280x720
+    }

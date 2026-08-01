@@ -1,0 +1,161 @@
+from playwright.sync_api import Page, expect
+from config import settings
+
+BUTTONS_URL = settings.BASE_URL + "/buttons"
+
+def test_btn_001_button_clickable_triggers_action(page: Page) -> None:
+    page.goto(BUTTONS_URL)
+    locate_button = page.locator('[data-testid="btn-navigate-home"]')
+    locate_button.click()
+    expect(page.locator('[data-testid="result-s01"]')).to_contain_text("Home")
+
+
+def test_btn_002_button_displays_correct_label_text(page: Page) -> None:
+    page.goto(BUTTONS_URL)
+    btn_home = page.locator('[data-testid="btn-navigate-home"]')
+    btn_home_text = btn_home.text_content().strip()
+    assert btn_home_text == "Go To Home", f"Expected 'Go To Home', but got '{btn_home_text}'"
+
+
+def test_btn_003_single_click_triggers_correct_action(page: Page) -> None:
+    page.goto(BUTTONS_URL)
+    btn_coordinates = page.locator('[data-testid="btn-get-coordinates"]')
+    btn_coordinates.click()
+    cordinates_result = page.locator('[data-testid="result-s02"]')
+    cordinates_text = cordinates_result.text_content().strip()
+    assert "X:" in cordinates_text and "Y:" in cordinates_text, f"Expected X/Y values in result, but got '{cordinates_text}'"
+
+
+def test_btn_004_double_click_button_triggers_action(page: Page) -> None:
+    page.goto(BUTTONS_URL)
+    btn_double_click = page.locator('[data-testid="btn-double-click"]')
+    btn_double_click.dblclick()
+    result_text = page.locator('[data-testid="result-s07"]')
+    expect(result_text).to_have_text("Double clicked!")
+
+
+def test_btn_005_right_click_button_opens_context_action(page: Page) -> None:
+    page.goto(BUTTONS_URL)
+    btn_right_click = page.locator('[data-testid="btn-right-click"]')
+    btn_right_click.click(button='right')
+    result_text = page.locator('[data-testid="result-s08"]')
+    expect(result_text).to_have_text("Context menu triggered!")
+
+
+def test_btn_006_disabled_button_cannot_be_clicked(page: Page) -> None:
+    page.goto(BUTTONS_URL)
+    btn_disabled = page.locator('[data-testid="btn-disabled"]')
+    expect(btn_disabled).to_be_disabled()
+    result_text = page.locator('[data-testid="result-s05"]')
+    expect(result_text).to_have_text("Button is disabled — no action fires")
+    
+
+def test_btn_007_enabled_button_reports_enabled_state(page: Page) -> None:
+    page.goto(BUTTONS_URL)
+    btn_home = page.locator('[data-testid="btn-navigate-home"]')
+    expect(btn_home).to_be_enabled()
+    assert not btn_home.get_attribute("disabled")
+
+
+def test_btn_008_button_stays_usable_across_viewport_sizes(page: Page) -> None:
+    page.goto(BUTTONS_URL)
+    btn_home = page.locator('[data-testid="btn-navigate-home"]')
+
+    # Test mobile viewport
+    page.set_viewport_size({"width": 375, "height": 667})
+    expect(btn_home).to_be_visible()
+    expect(btn_home).to_be_enabled()
+
+    # Test desktop viewport
+    page.set_viewport_size({"width": 1440, "height": 900})
+    expect(btn_home).to_be_visible()
+    expect(btn_home).to_be_enabled()
+
+def test_btn_009_button_operable_via_keyboard(page: Page) -> None:
+    page.goto(BUTTONS_URL)
+    btn_home = page.locator('[data-testid="btn-navigate-home"]')
+
+    btn_home.focus()
+    page.keyboard.press("Enter")
+    expect(page.locator('[data-testid="result-s01"]')).to_contain_text("Home")
+    
+
+
+def test_btn_010_button_exposed_to_screen_readers(page: Page) -> None:
+    ##TODO: re-do this test
+    page.goto(BUTTONS_URL)
+    snapshot = page.accessibility.snapshot()
+    button_node = next((node for node in snapshot['children'] if node.get('name') == 'Go To Home'), None)
+    
+    assert button_node is not None, "Button not found in accessibility tree"
+    assert button_node.get('role') == 'button', f"Expected role 'button', but got '{button_node.get('role')}'"
+    assert button_node.get('name'), "Accessible name is empty"
+
+
+def test_btn_011_hover_state_visually_distinct(page: Page) -> None:
+    page.goto(BUTTONS_URL)
+    btn_home = page.locator('[data-testid="btn-get-coordinates"]')
+    initial_bg_color = btn_home.evaluate("element => getComputedStyle(element).backgroundColor")
+    btn_home.hover()
+    hovered_bg_color = btn_home.evaluate("element => getComputedStyle(element).backgroundColor")
+    assert initial_bg_color != hovered_bg_color, "Background color did not change on hover"
+
+
+def test_btn_012_result_state_resets_after_page_refresh(page: Page) -> None:
+    page.goto(BUTTONS_URL)
+    locate_button = page.locator('[data-testid="btn-navigate-home"]')
+    locate_button.click()
+    expect(page.locator('[data-testid="result-s01"]')).to_contain_text("Home")
+    page.reload()
+    result_text_after_reload = page.locator('[data-testid="result-s01"]')
+    assert result_text_after_reload.text_content().strip() == "No navigation yet", "Result did not reset after page reload"
+
+
+def test_btn_013_click_and_hold_completes_after_time(page: Page) -> None:
+    page.goto(BUTTONS_URL)
+    btn_click_hold = page.locator('[data-testid="btn-click-hold"]')
+    btn_click_hold.hover()
+    page.mouse.down()
+    page.wait_for_timeout(1500)  # Wait for 1.5 seconds
+    page.mouse.up()
+    result_text = page.locator('[data-testid="result-s06"]')
+    expect(result_text).to_have_text("Held for 1.5s")
+
+
+def test_btn_014_button_does_not_overlap_adjacent_elements(page: Page) -> None:
+    page.goto(BUTTONS_URL)
+    btn_home = page.locator('[data-testid="btn-navigate-home"]')
+    adjacent_element = page.locator('[data-testid="result-s01"]')
+
+    btn_box = btn_home.bounding_box()
+    adjacent_box = adjacent_element.bounding_box()
+
+    assert btn_box is not None and adjacent_box is not None, "Bounding boxes could not be retrieved"
+
+    
+    overlap = not (btn_box['x'] + btn_box['width'] < adjacent_box['x'] or
+                   adjacent_box['x'] + adjacent_box['width'] < btn_box['x'] or
+                   btn_box['y'] + btn_box['height'] < adjacent_box['y'] or
+                   adjacent_box['y'] + adjacent_box['height'] < btn_box['y'])
+
+    assert not overlap, "Button overlaps with adjacent element"
+
+
+def test_btn_015_page_loads_without_console_errors(page: Page) -> None:
+    console_errors = []
+    page_errors = []
+
+    def handle_console(msg):
+        if msg.type == "error":
+            console_errors.append(msg.text)
+
+    def handle_page_error(exception):
+        page_errors.append(str(exception))
+
+    page.on("console", handle_console)
+    page.on("pageerror", handle_page_error)
+
+    page.goto(BUTTONS_URL)
+
+    assert not console_errors, f"Console errors found: {console_errors}"
+    assert not page_errors, f"Page errors found: {page_errors}"

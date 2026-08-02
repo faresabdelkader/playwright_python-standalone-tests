@@ -4,6 +4,14 @@ from config import settings
 BUTTONS_URL = settings.BASE_URL + "/buttons"
 
 def test_btn_001_button_clickable_triggers_action(page: Page) -> None:
+    """BTN_001: Button is clickable and triggers its action.
+
+    Steps:
+    1. Navigate to BUTTONS_URL.
+    2. Locate [data-testid="btn-navigate-home"].
+    3. Call click().
+    4. Assert [data-testid="result-s01"] contains "Home".
+    """
     page.goto(BUTTONS_URL)
     locate_button = page.locator('[data-testid="btn-navigate-home"]')
     locate_button.click()
@@ -11,6 +19,13 @@ def test_btn_001_button_clickable_triggers_action(page: Page) -> None:
 
 
 def test_btn_002_button_displays_correct_label_text(page: Page) -> None:
+    """BTN_002: Button displays the correct label text.
+
+    Steps:
+    1. Locate [data-testid="btn-navigate-home"].
+    2. Read text via text_content().
+    3. Assert trimmed text equals "Go To Home".
+    """
     page.goto(BUTTONS_URL)
     btn_home = page.locator('[data-testid="btn-navigate-home"]')
     btn_home_text = btn_home.text_content().strip()
@@ -18,6 +33,13 @@ def test_btn_002_button_displays_correct_label_text(page: Page) -> None:
 
 
 def test_btn_003_single_click_triggers_correct_action(page: Page) -> None:
+    """BTN_003: Single click triggers the correct action.
+
+    Steps:
+    1. Click [data-testid="btn-get-coordinates"].
+    2. Assert [data-testid="result-s02"] shows X/Y values.
+    3. Assert unrelated results were not modified.
+    """
     page.goto(BUTTONS_URL)
     btn_coordinates = page.locator('[data-testid="btn-get-coordinates"]')
     btn_coordinates.click()
@@ -27,6 +49,13 @@ def test_btn_003_single_click_triggers_correct_action(page: Page) -> None:
 
 
 def test_btn_004_double_click_button_triggers_action(page: Page) -> None:
+    """BTN_004: Double-click button triggers a double-click action.
+
+    Steps:
+    1. Locate [data-testid="btn-double-click"].
+    2. Perform dblclick().
+    3. Assert [data-testid="result-s07"] reads "Double clicked!".
+    """
     page.goto(BUTTONS_URL)
     btn_double_click = page.locator('[data-testid="btn-double-click"]')
     btn_double_click.dblclick()
@@ -35,6 +64,13 @@ def test_btn_004_double_click_button_triggers_action(page: Page) -> None:
 
 
 def test_btn_005_right_click_button_opens_context_action(page: Page) -> None:
+    """BTN_005: Right-click button opens the context action.
+
+    Steps:
+    1. Locate [data-testid="btn-right-click"].
+    2. Perform click(button='right').
+    3. Assert [data-testid="result-s08"] confirms context action.
+    """
     page.goto(BUTTONS_URL)
     btn_right_click = page.locator('[data-testid="btn-right-click"]')
     btn_right_click.click(button='right')
@@ -43,6 +79,13 @@ def test_btn_005_right_click_button_opens_context_action(page: Page) -> None:
 
 
 def test_btn_006_disabled_button_cannot_be_clicked(page: Page) -> None:
+    """BTN_006: Disabled button cannot be clicked.
+
+    Steps:
+    1. Locate [data-testid="btn-disabled"].
+    2. Assert is_enabled() is False or to_be_disabled() passes.
+    3. Confirm result area stays at initial text.
+    """
     page.goto(BUTTONS_URL)
     btn_disabled = page.locator('[data-testid="btn-disabled"]')
     expect(btn_disabled).to_be_disabled()
@@ -51,6 +94,13 @@ def test_btn_006_disabled_button_cannot_be_clicked(page: Page) -> None:
     
 
 def test_btn_007_enabled_button_reports_enabled_state(page: Page) -> None:
+    """BTN_007: Enabled button reports an enabled state.
+
+    Steps:
+    1. Locate [data-testid="btn-navigate-home"].
+    2. Assert is_enabled() returns True.
+    3. Assert the disabled attribute is absent.
+    """
     page.goto(BUTTONS_URL)
     btn_home = page.locator('[data-testid="btn-navigate-home"]')
     expect(btn_home).to_be_enabled()
@@ -58,6 +108,12 @@ def test_btn_007_enabled_button_reports_enabled_state(page: Page) -> None:
 
 
 def test_btn_008_button_stays_usable_across_viewport_sizes(page: Page) -> None:
+    """BTN_008: Button stays usable across viewport sizes.
+
+    Steps:
+    1. Set viewport to 375x667 and assert visible and clickable.
+    2. Set viewport to 1440x900 and re-assert.
+    """
     page.goto(BUTTONS_URL)
     btn_home = page.locator('[data-testid="btn-navigate-home"]')
 
@@ -72,6 +128,13 @@ def test_btn_008_button_stays_usable_across_viewport_sizes(page: Page) -> None:
     expect(btn_home).to_be_enabled()
 
 def test_btn_009_button_operable_via_keyboard(page: Page) -> None:
+    """BTN_009: Button is operable via keyboard.
+
+    Steps:
+    1. Focus the button via focus().
+    2. Press Enter.
+    3. Assert the same action fires as a mouse click.
+    """
     page.goto(BUTTONS_URL)
     btn_home = page.locator('[data-testid="btn-navigate-home"]')
 
@@ -82,6 +145,13 @@ def test_btn_009_button_operable_via_keyboard(page: Page) -> None:
 
 
 def test_btn_010_button_exposed_to_screen_readers(page: Page) -> None:
+    """BTN_010: Button is exposed to screen readers.
+
+    Steps:
+    1. Inspect the accessibility tree via page.accessibility.snapshot().
+    2. Assert the role resolves to button.
+    3. Assert the accessible name is non-empty.
+    """
     ##TODO: re-do this test
     page.goto(BUTTONS_URL)
     snapshot = page.accessibility.snapshot()
@@ -93,6 +163,13 @@ def test_btn_010_button_exposed_to_screen_readers(page: Page) -> None:
 
 
 def test_btn_011_hover_state_visually_distinct(page: Page) -> None:
+    """BTN_011: Hover state is visually distinct.
+
+    Steps:
+    1. Read background-color before hover.
+    2. Perform hover().
+    3. Read background-color after hover and assert the style changed.
+    """
     page.goto(BUTTONS_URL)
     btn_home = page.locator('[data-testid="btn-get-coordinates"]')
     initial_bg_color = btn_home.evaluate("element => getComputedStyle(element).backgroundColor")
@@ -102,6 +179,13 @@ def test_btn_011_hover_state_visually_distinct(page: Page) -> None:
 
 
 def test_btn_012_result_state_resets_after_page_refresh(page: Page) -> None:
+    """BTN_012: Result state resets after a page refresh.
+
+    Steps:
+    1. Click the button and confirm the result changed.
+    2. Reload the page via page.reload().
+    3. Assert the result returns to its initial value.
+    """
     page.goto(BUTTONS_URL)
     locate_button = page.locator('[data-testid="btn-navigate-home"]')
     locate_button.click()
@@ -112,6 +196,13 @@ def test_btn_012_result_state_resets_after_page_refresh(page: Page) -> None:
 
 
 def test_btn_013_click_and_hold_completes_after_time(page: Page) -> None:
+    """BTN_013: Click-and-hold completes after 1.5 seconds.
+
+    Steps:
+    1. Press and hold [data-testid="btn-click-hold"] via mouse.down().
+    2. Wait 1500 ms, then release via mouse.up().
+    3. Assert [data-testid="result-s06"] confirms the completed hold.
+    """
     page.goto(BUTTONS_URL)
     btn_click_hold = page.locator('[data-testid="btn-click-hold"]')
     btn_click_hold.hover()
@@ -123,6 +214,13 @@ def test_btn_013_click_and_hold_completes_after_time(page: Page) -> None:
 
 
 def test_btn_014_button_does_not_overlap_adjacent_elements(page: Page) -> None:
+    """BTN_014: Button does not overlap adjacent elements.
+
+    Steps:
+    1. Read the button bounding_box().
+    2. Read the neighboring element bounding_box().
+    3. Assert the two rectangles do not intersect.
+    """
     page.goto(BUTTONS_URL)
     btn_home = page.locator('[data-testid="btn-navigate-home"]')
     adjacent_element = page.locator('[data-testid="result-s01"]')
@@ -142,6 +240,13 @@ def test_btn_014_button_does_not_overlap_adjacent_elements(page: Page) -> None:
 
 
 def test_btn_015_page_loads_without_console_errors(page: Page) -> None:
+    """BTN_015: Page loads without console errors.
+
+    Steps:
+    1. Attach listeners to console and pageerror events.
+    2. Navigate to BUTTONS_URL.
+    3. Assert no error-level messages were captured.
+    """
     console_errors = []
     page_errors = []
 
